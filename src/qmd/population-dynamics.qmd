@@ -158,8 +158,8 @@ Creating a function to calculate the CBR for our data set, to do this we create 
 
 ```{R}
 # Function to compute the Crude Birth Rate (CBR) and grouping it by each period
-compute_cbr <- function (populationData) {
-  populationData%>% 
+compute_cbr <- function (pop_data) {
+  pop_data%>% 
     group_by(period) %>% 
       summarise(cbr = sum(births) / sum(py)) %>% 
         pull()

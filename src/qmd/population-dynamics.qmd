@@ -1,0 +1,424 @@
+---
+title: 'Understanding World Population Dynamics'
+subtitle: "Assignment 1 - PSYC593"
+csl: apa.csl
+format:
+  pdf: 
+    latex-output-dir: "../../doc/"
+  html:
+    embed-resources: true
+    self_contained: true 
+    output_dir: "../../doc/"
+knitr: 
+  opts_chunk:
+      fig.path: "../../results/figures/"
+editor: source
+markdown: 
+    wrap: 72
+author: Biraj Neupane
+date: today
+---
+
+<!-- These problems come from Imai, K. & Webb Williams, N. (2018). Quantitative Social Science: An introduction -->
+
+<!-- in tidyverse. Princeton University Press. -->
+
+<!-- The code giving partial solutions by Víctor H Cervantes -->
+
+Understanding population dynamics is important for many areas of social science. We will calculate some basic demographic quantities of births and deaths for the world's population from two time periods: 1950 to 1955 and 2005 to 2010. We will analyze the following CSV data files - `Kenya.csv`, `Sweden.csv`, and `World.csv`. Each file contains population data for Kenya, Sweden, and the world, respectively. The table below presents the names and descriptions of the variables in each data set.
+
+<!-- Note the syntax to create a table in markdown -->
+
+<!-- Before the table there must be an empty line, and -->
+
+<!-- the table begins with a line of dashes. -->
+
+<!-- The column names are separated with spaces -->
+
+<!-- and the first character must be a space -->
+
+<!-- Then, segments of repeated dashes indicate the column separations (note -->
+
+<!-- the space between groups of dashes before the character D of the column Description) -->
+
+| Name       | Description                                                                             |
+|:-----------------------|:-----------------------------------------------|
+| `country`  | Abbreviated country name                                                                |
+| `period`   | Period during which data are collected                                                  |
+| `age`      | Age group                                                                               |
+| `births`   | Number of births in thousands (i.e., number of children born to women of the age group) |
+| `deaths`   | Number of deaths in thousands                                                           |
+| `py.men`   | Person-years for men in thousands                                                       |
+| `py.women` | Person-years for women in thousands                                                     |
+
+Source: United Nations, Department of Economic and Social Affairs, Population Division (2013). *World Population Prospects: The 2012 Revision, DVD Edition.*
+
+Loading required packages for our analysis.
+
+```{r}
+# Load packages with message suppressed ----
+suppressPackageStartupMessages(library(tidyverse))
+# packages for the path
+suppressPackageStartupMessages(library(here))
+# package for path
+suppressPackageStartupMessages(library(rprojroot))
+```
+
+Global and local path variables to make sure the working directory and path directory are consistent throughout the project.
+
+```{r directory and subdirectory}
+# directories ----------
+root_path <- here::here() # to verify it as a RStudio project
+crit_path <- rprojroot::find_root(has_dir("src")) # directory structure 
+# sub directory to access and create files
+code_path <- file.path(root_path, "src") # R and qmd code file path
+data_path <- file.path(root_path, "data") # path for data set
+figs_path <- file.path(crit_path, "results", "figures") # path for figures
+```
+
+### Loading Detasets required for our analysis
+
+Data sets for our analysis are located in data folder and raw_data sub folder of our folders. We need to access that and read it uniformly. The original data are in CSV format we are creating a data frame from it.
+
+This code will read our datsets.
+```{r}
+# Read data ----
+world_data <- read.csv(file = file.path(data_path, "raw_data", "World.csv"))
+kenya_data <- read.csv(file = file.path(data_path, "raw_data", "Kenya.csv"))
+sweden_data <- read.csv(file = file.path(data_path, "raw_data", "Sweden.csv"))
+
+## Creating Data frame for each country ----
+
+world_data <- data.frame(world_data)
+kenya_data <- data.frame(kenya_data)
+sweden_data <- data.frame(sweden_data)
+```
+
+<!-- The `read_csv` function from the package `readr` -->
+
+<!-- is part of the `tidyverse`. It will read the data into a -->
+
+<!-- special `data.frame` with more structure known as a `tibble` -->
+
+The data are collected for a period of 5 years where *person-year* is a measure of the time contribution of each person during the period. For example, a person that lives through the entire 5 year period contributes 5 person-years whereas someone who only lives through the first half of the period contributes 2.5 person-years. Before you begin this exercise, it would be a good idea to directly inspect each data set. In R, this can be done with the `View` function, which takes as its argument the name of a `data.frame` to be examined. Alternatively, in RStudio, double-clicking a `data.frame` in the `Environment` tab will enable you to view the data in a spreadsheet-like view.
+
+## Question 1
+
+We begin by computing *crude birth rate* (CBR) for a given period. The CBR is defined as: $$ 
+    \text{CBR} 
+     =  \frac{\text{number of births}}{\text{number of person-years lived}}
+  $$ <!-- It is also possible to include $\LaTeX$ syntax directly in the document. -->
+
+Compute the CBR for each period, separately for Kenya, Sweden, and the world. Start by computing the total person-years, recorded as a new variable within each existing `data.frame` via the `$` operator, by summing the person-years for men and women. Then, store the results as a vector of length 2 (CBRs for two periods) for each region with appropriate labels. You may wish to create your own function for the purpose of efficient programming. Briefly describe patterns you observe in the resulting CBRs.
+
+### Answer 1
+
+Calculation of total person years to compute the CBR from our data set. for this we add men person year and women person year and create a new column py(person year) for each period.
+
+This code will create a new column For the period of 1950-1955 with person year.
+
+```{r}
+# New variable py = total person years for each data set period 1950-1955----
+world_data$py_1950_1955 <- ifelse(world_data$period == "1950-1955",
+                                  world_data$py.men + world_data$py.women, NA)
+kenya_data$py_1950_1955 <- ifelse(kenya_data$period == "1950-1955", 
+                                kenya_data$py.men + kenya_data$py.women, NA)
+sweden_data$py_1950_1955 <- ifelse(sweden_data$period == "1950-1955",
+                                sweden_data$py.men + sweden_data$py.women, NA)
+```
+
+For the period of 2005-2010.
+
+```{r}
+# New variable py = total person years for each data set period 2005-2010----
+world_data$py_2005_2010 <- ifelse(world_data$period == "2005-2010", 
+                            world_data$py.men + world_data$py.women, NA)
+kenya_data$py_2005_2010 <- ifelse(kenya_data$period == "2005-2010", 
+                            kenya_data$py.men + kenya_data$py.women, NA)
+sweden_data$py_2005_2010 <- ifelse(sweden_data$period == "2005-2010",
+                             sweden_data$py.men + sweden_data$py.women, NA)
+```
+
+for the whole data set.
+
+```{r}
+# Create new variable py = total person years for each data set
+world_data$py <- world_data$py.men + world_data$py.women
+kenya_data$py <- kenya_data$py.men + kenya_data$py.women
+sweden_data$py <- sweden_data$py.men + sweden_data$py.women
+```
+
+<!-- Whenever you find that you will repeat the same calculation -->
+
+<!-- on different sets of data, **consider** creating a function -->
+
+<!-- instead of repeating the code for each piece of data. -->
+
+Creating a function to calculate the CBR for our data set, to do this we create a function and use the formula for CBR enlisted up above.
+
+```{R}
+# Function to compute the Crude Birth Rate (CBR) and grouping it by each period
+compute_cbr <- function (populationData) {
+  populationData%>% 
+    group_by(period) %>% 
+      summarise(cbr = sum(births) / sum(py)) %>% 
+        pull()
+}
+```
+
+```{r}
+# Compute the CBR for each data set
+(world_cbr  <-compute_cbr(world_data))
+(kenya_cbr  <-compute_cbr(kenya_data))
+(sweden_cbr <-compute_cbr(sweden_data))
+```
+
+<!-- The "pipe" `%>%` from package `magrittr` takes the output -->
+
+<!-- from the left hand side and makes it the first argument of -->
+
+<!-- the expression on the right hand side. -->
+
+<!-- Starting in R 4.1.0, there is a base pipe operator `|>` -->
+
+<!-- which has a similar behavior. -->
+
+###Results Interpretation
+
+From the results, we can see that the CBR of 0.037 (37) births per 1,000 people in the world during the period of 1950-1955 which decreased to 0.020 (20) per 1,000 people in the period of 2005-2010. Similarly, we observe a CBR of 0.052 (52) births per 1,000 people in Kenya for 1950-1955, and a CBR of 0.038 (38) births per 1,000 people in 2005-2010. In Sweden, the CBR was 0.015 (15) births per 1,000 people in 1950-1955, and it decreased to 0.0119 (12) births per 1,000 people in 2005-2010.
+
+## Question 2
+
+The CBR is easy to understand but contains both men and women of all ages in the denominator. We next calculate the *total fertility rate* (TFR). Unlike the CBR, the TFR adjusts for age compositions in the female population. To do this, we need to first calculate the *age specific fertility rate* (ASFR), which represents the fertility rate for women of the reproductive age range $[15, 50)$. The ASFR for age range $[x, x+\delta)$, where $x$ is the starting age and $\delta$ is the width of the age range (measured in years), is defined as: $$
+    \text{ASFR}_{[x,\ x+\delta)} 
+    \ = \ \frac{\text{number of births to women of age $[x,\ x+\delta)$}}{\text{Number of person-years lived by women of age $[x,\ x+\delta)$}}
+  $$ Note that square brackets, $[$ and $]$, include the limit whereas parentheses, $($ and $)$, exclude it. For example, $[20, 25)$ represents the age range that is greater than or equal to 20 years old and less than 25 years old. In typical demographic data, the age range $\delta$ is set to 5 years. Compute the ASFR for Sweden and Kenya as well as the entire world for each of the two periods. Store the resulting ASFRs separately for each region. What does the pattern of these ASFRs say about reproduction among women in Sweden and Kenya?
+
+### Answer 2
+
+Creating a function to calculate Age-Specific Fertility Rate, this code will help us to calculate asfr.
+
+```{r}
+# Function to compute Age specific fertility rate (ASFR) ----
+compute_asfr <- function (pop_data) {
+  pop_data %>%
+    group_by(period) %>%
+    mutate(asfr= births / py.women) %>% 
+    pull()
+}
+```
+
+
+This code is computing ASFR for each data set and add new column for each dataset with variable name asfr.
+
+```{r}
+# Compute ASFR for each data set -----
+(world_data$asfr <- compute_asfr(world_data))
+(kenya_data$asfr <- compute_asfr(kenya_data))
+(sweden_data$asfr <- compute_asfr(sweden_data))
+
+```
+
+Creating a dummy variables to total the ASFRs by Period to make it easy for interpretation.
+
+```{r}
+# summing up ASFRS for Kenya and Sweden by period --------
+sum_asfrs_kenya <- kenya_data %>%
+  group_by(period) %>%
+  summarise(total_asfr_kenya = sum(asfr, na.rm = TRUE))
+
+sum_asfrs_sweden <- sweden_data %>% 
+                    group_by(period) %>% 
+                      summarise(total_asfr_sweden = sum(asfr, na.rm = TRUE))
+```
+
+this will generate a results of ASFRs for kenya and sweden
+```{r}
+#Compare ASFRs for Kenya and Sweden --------
+sum_asfrs_kenya
+sum_asfrs_sweden
+```
+
+### Result Interpretation and comparison
+
+In the period of 1950-1955, the total ASFR for Kenya was approximately 1.52, which decreased to 0.98 in the period of 2005-2010. This decline indicates that during the latter period, women were having less than 1 child on average. Similarly in sweden for the period of 1950-1955 ASFR was approximately 0.45 and was slightly decreased to 0.38 in the period 2005-2010. In contrast to Kenya's dramatic drop in fertility rates, Sweden's ASFR remained relatively stable,
+
+## Question 3
+
+Using the ASFR, we can define the TFR as the average number of children women give birth to if they live through their entire reproductive age. $$
+  \text{TFR} 
+   =   \text{ASFR}_{[15,\ 20)} \times 5 + \text{ASFR}_{[20,\ 25)} \times 5 
+  + \dots + \text{ASFR}_{[45,\ 50)} \times 5
+  $$
+
+We multiply each age-specific fertility rate rate by 5 because the age range is 5 years. Compute the TFR for Sweden and Kenya as well as the entire world for each of the two periods. As in the previous question, continue to assume that women's reproductive age range is $[15, 50)$. Store the resulting two TFRs for each country or the world as a vector of length two. In general, how has the number of women changed in the world from 1950 to 2000? What about the total number of births in the world?
+
+### Answer 3
+
+creating a function to calculate a TRF
+
+```{r}
+# Function to calculate the total fertility rate (TFR) -------
+
+compute_tfr <- function(data) {
+  data %>%
+    group_by(period) %>%
+    summarise(tfr = 5 * sum(asfr, na.rm = TRUE)) %>%
+    pull(tfr)
+}
+```
+
+Generating a TFR for each data set using the function to the data set.
+
+```{r}
+#  TFR for each data set --------
+(world_tfr <- compute_tfr(world_data))
+(kenya_tfr <- compute_tfr(kenya_data))
+(sweden_tfr <- compute_tfr(sweden_data))
+```
+### Interpreatation
+
+Total fertility rate (TFR) for the world was approximately 5.01 for the 1950-1955 period and 2.54 for the 2005-2010. For Kenya, the TFR was relatively higher, at 7.59 for the period of 1950-1955 and 4.88 for the 2005-2010, indicating a decline but still high fertility rates if we compare it with the Sweden and even the world. In contrast, Sweden's TFR was notably lower, with values of 2.23 for the earlier period and 1.90 for the 2005-2010 period.
+
+Calculating the total women and birth in the world by period and comparing the change between the period of 2 period of interest.
+
+```{r}
+# Totals women and births in the world by period ---------
+(
+  world_data %>%
+    group_by(period) %>%
+    summarise(
+      total_women = sum(py.women),
+      total_births = sum(births)
+    ) ->
+  totals_world
+)
+
+# Comparing how much these totals have changed
+(changes_totals <- totals_world[2, -1] / totals_world[1, -1])
+```
+
+###Result
+
+The total number of women in the world increased significantly, more than doubling from approximately 6.56 million in 1950-1955 to around 16.55 million in 2005-2010. Similarly, the total number of births rose from about 489,000 to approximately 675,000, reflecting a growth of 38% over the same period. Notably, the female population increased by about 152%, while the number of births saw a rise of 37.9% from 1950-1955 to 2005-2010.
+
+## Question 4
+
+Next, we will examine another important demographic process: death. Compute the *crude death rate* (CDR), which is a concept analogous to the CBR, for each period and separately for each region. Store the resulting CDRs for each country and the world as a vector of length two. The CDR is defined as: $$ 
+    \text{CDR} 
+     =  \frac{\text{number of deaths}}{\text{number of person-years lived}}
+  $$ Briefly describe patterns you observe in the resulting CDRs.
+
+
+Creating a function to compute a crude death rate.
+
+```{r}
+# Function to compute the Crude death rate (CDR)
+compute_cdr <- function(data) {
+  data %>%
+    group_by(period) %>%
+    summarise(cbr = sum(deaths) / sum(py)) %>%
+    pull()
+}
+```
+
+
+This code will compute a CDR for each data set and provide us with the result for two period 1950-1955 and 2005-2010.
+
+```{r}
+# Compute the CDR for each data set
+(world_cdr <- compute_cdr(world_data))
+(kenya_cdr <- compute_cdr(kenya_data))
+(sweden_cdr <- compute_cdr(sweden_data))
+```
+
+### Result
+
+Globally, the CDR decreased from approximately 0.0193 in the 1950-1955 period to 0.0082 in the 2005-2010 period, Kenya's CDR declined from about 0.0240 to 0.0104 respectively. Whereas the CBR for Sweden remained relatively stable 0.0098 in the 1950-1955 period and 0.0100 for 2005-2010.
+
+## Question 5
+
+One puzzling finding from the previous question is that the CDR for Kenya during the period of 2005-2010 is about the same level as that for Sweden. We would expect people in developed countries like Sweden to have a lower death rate than those in developing countries like Kenya. While it is simple and easy to understand, the CDR does not take into account the age composition of a population. We therefore compute the *age specific death rate* (ASDR). The ASDR for age range $[x, x+\delta)$ is defined as: $$
+    \text{ASDR}_{[x,\ x+\delta)} 
+    \ = \ \frac{\text{number of deaths for people of age $[x,\ x+\delta)$}}
+               {\text{number of person-years of people of age $[x,\ x+\delta)$}}
+  $$ Calculate the ASDR for each age group, separately for Kenya and Sweden, during the period of 2005-2010. Briefly describe the pattern you observe.
+
+writing a function to compute age specific death rate.
+```{r}
+# Function to compute Age specific death rate (ASDR)
+compute_asdr <- function(pop_data) {
+  pop_data %>%
+    group_by(period) %>% 
+    mutate(asdr = deaths / py)
+}
+```
+
+This code will compute the ASDR for each data set.
+```{r}
+# Compute ASDR for each data set
+(world_data <- compute_asdr(world_data))
+(kenya_data <- compute_asdr(kenya_data))
+(sweden_data <- compute_asdr(sweden_data))
+```
+
+constructing the table to compare Sweden and Kenya
+
+```{r}
+# creating a table to compare asdr for the 2005-2010 period
+sweden_asdr_2005_2010 <- sweden_data %>%
+  filter(period == "2005-2010") %>% select(age, asdr)
+
+kenya_asdr_2005_2010 <- kenya_data %>%
+  filter(period == "2005-2010") %>% select(age, asdr)
+#joint table for ASDR 
+join_table_asdr <- left_join(sweden_asdr_2005_2010, kenya_asdr_2005_2010, by = c("age", "period"), suffix = c(
+  "_sweden", "_kenya"
+))
+
+print(join_table_asdr)
+```
+
+### Result and patterns observed
+
+The age-specific death rates (ASDR) for Kenya are consistently higher than those for Sweden. Both countries show an increasing ASDR with age; however, the rate of increase is steeper in Kenya. For example, in the youngest age group (0-4 years), the ASDR for Kenya is 0.0209 , compared to Sweden's 0.000679. This trend continues into older age groups, as seen in the 70-79 age category, where the ASDR in Kenya is 0.0613, while in Sweden, it is only 0.0280. In the oldest age group (80+ years), Kenya's ASDR rises to 0.159, whereas Sweden's is 0.110.
+
+## Question 6
+
+One way to understand the difference in the CDR between Kenya and Sweden is to compute the counter factual CDR for Kenya using Sweden's population distribution (or vice versa). This can be done by applying the following alternative formula for the CDR. $$
+    \text{CDR}
+    \ = \ \text{ASDR}_{[0, 5)} \times P_{[0,5)} + \text{ASDR}_{[5, 10)}
+    \times P_{[5, 10)} + \cdots 
+  $$ where $P_{[x, x+\delta)}$ is the proportion of the population in the age range $[x, x+\delta)$. We compute this as the ratio of person-years in that age range relative to the total person-years across all age ranges. To conduct this counterfactual analysis, we use $\text{ASDR}_{[x,x+\delta)}$ from Kenya and $P_{[x,x+\delta)}$ from Sweden during the period of 2005--2010. That is, first calculate the age-specific population proportions for Sweden and then use them to compute the counterfactual CDR for Kenya. How does this counterfactual CDR compare with the original CDR of Kenya? Briefly interpret the result.
+
+Creating a function to compute population proportion by period .
+```{r}
+# Function to compute population proportion by period
+compute_pop_prop <- function(data) {
+  data %>%
+    group_by(period) %>%
+    mutate(popP = py / sum(py)) %>%
+    ungroup()
+}
+```
+
+This code will execute the above function to compute the population porportion by period for each dataset.
+```{r}
+# Compute population proportion for each data set
+(world_data <- compute_pop_prop(world_data))
+(kenya_data <- compute_pop_prop(kenya_data))
+(sweden_data <- compute_pop_prop(sweden_data))
+```
+Creating a function to compute kenyas CDR if Kenya had swedens population distribution.
+```{r}
+# Compute Kenyas CDR Kenya had Sweden's population distribution
+mutate(kenya_data,
+  temp_cdr = asdr * sweden_data$popP
+) %>%
+  group_by(period) %>%
+  summarise(cdrresweden = sum(temp_cdr))
+```
+
+### Result
+
+The calculated CDR for Kenya, assuming it had Sweden's population distribution, is 0.0257 for the period 1950-1955 and 0.0232 for 2005-2010. In comparison, the actual CDR for Kenya during these periods is 0.02396254 for 1950-1955 and 0.01038914 for 2005-2010. This difference indicates that the actual mortality rates in Kenya are influenced significantly by its age distribution of population. The counterfactual CDRs suggest that if Kenya had a population structure similar to Sweden's, the mortality rates would be relatively higher.

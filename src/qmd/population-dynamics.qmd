@@ -168,9 +168,9 @@ compute_cbr <- function (pop_data) {
 
 ```{r}
 # Compute the CBR for each data set
-(world_cbr  <-compute_cbr(world_data))
-(kenya_cbr  <-compute_cbr(kenya_data))
-(sweden_cbr <-compute_cbr(sweden_data))
+(world_cbr  <- compute_cbr(world_data))
+(kenya_cbr  <- compute_cbr(kenya_data))
+(sweden_cbr <- compute_cbr(sweden_data))
 ```
 
 <!-- The "pipe" `%>%` from package `magrittr` takes the output -->
@@ -203,7 +203,7 @@ Creating a function to calculate Age-Specific Fertility Rate, this code will hel
 compute_asfr <- function (pop_data) {
   pop_data %>%
     group_by(period) %>%
-    mutate(asfr= births / py.women) %>% 
+    mutate(asfr = births / py.women) %>% 
     pull()
 }
 ```

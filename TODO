@@ -1,0 +1,7 @@
+identify and change the variables name to tidyverse style
+
+make variables uniform across via going throught each variables in code file
+
+adress comment Some spaces around operators are missing. 
+
+recalculate ASFR within the reproductive age range [15, 50).

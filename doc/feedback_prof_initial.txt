@@ -1,0 +1,9 @@
+Some variables, like populationData, do not follow the style.
+You can rename it to pop_data (as you did in other parts of the code).
+
+Some spaces around operators are missing. 
+For example around the equal sign on line 206
+
+Note that for the definition of the ASFR it is emphasized that it is thought for
+women within the reproductive age range [15, 50). So, it may be a appropriate to
+select only the age ranges covering that full range.

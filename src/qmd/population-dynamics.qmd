@@ -200,14 +200,16 @@ Creating a function to calculate Age-Specific Fertility Rate, this code will hel
 
 ```{r}
 # Function to compute Age specific fertility rate (ASFR) ----
-compute_asfr <- function (pop_data) {
+compute_asfr <- function(pop_data) {
   pop_data %>%
+    filter(age %in% c("15-19", "20-24", "25-29", "30-34", 
+                      "35-39", "40-44", "45-49")) %>%
     group_by(period) %>%
-    mutate(asfr = births / py.women) %>% 
-    pull()
+    summarise(asfr = sum(births) / sum(py.women), .groups = "drop") %>% 
+    pull(asfr)
 }
-```
 
+``` 
 
 This code is computing ASFR for each data set and add new column for each dataset with variable name asfr.
 
@@ -241,7 +243,7 @@ sum_asfrs_sweden
 
 ### Result Interpretation and comparison
 
-In the period of 1950-1955, the total ASFR for Kenya was approximately 1.52, which decreased to 0.98 in the period of 2005-2010. This decline indicates that during the latter period, women were having less than 1 child on average. Similarly in sweden for the period of 1950-1955 ASFR was approximately 0.45 and was slightly decreased to 0.38 in the period 2005-2010. In contrast to Kenya's dramatic drop in fertility rates, Sweden's ASFR remained relatively stable,
+In the period of 1950-1955, the total ASFR for Kenya was approximately 2.98, which remained almost the same 2.90 in the period of 2005-2010.Similarly in sweden for the period of 1950-1955 ASFR was approximately 0.87 and was also remained almost same  0.86 in the period 2005-2010.
 
 ## Question 3
 
@@ -275,10 +277,11 @@ Generating a TFR for each data set using the function to the data set.
 (world_tfr <- compute_tfr(world_data))
 (kenya_tfr <- compute_tfr(kenya_data))
 (sweden_tfr <- compute_tfr(sweden_data))
+
 ```
 ### Interpreatation
 
-Total fertility rate (TFR) for the world was approximately 5.01 for the 1950-1955 period and 2.54 for the 2005-2010. For Kenya, the TFR was relatively higher, at 7.59 for the period of 1950-1955 and 4.88 for the 2005-2010, indicating a decline but still high fertility rates if we compare it with the Sweden and even the world. In contrast, Sweden's TFR was notably lower, with values of 2.23 for the earlier period and 1.90 for the 2005-2010 period.
+Total fertility rate (TFR) for the world was approximately 8.78 for the 1950-1955 period and 8.41 for the 2005-2010. For Kenya, the TFR was relatively higher, at 14.92 for the period of 1950-1955 and 14.54 for the 2005-2010. In contrast, Sweden's TFR was notably lower than the world as well as kenya, with values of 4.36 for the earlier period and 4.31 for the 2005-2010 period.
 
 Calculating the total women and birth in the world by period and comparing the change between the period of 2 period of interest.
 

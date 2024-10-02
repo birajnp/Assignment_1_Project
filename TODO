@@ -2,6 +2,6 @@ identify and change the variables name to tidyverse style #done
 
 make variables uniform across via going throught each variables in code file #done
 
-address comment Some spaces around operators are missing. 
+address comment Some spaces around operators are missing. # done
 
-recalculate ASFR within the reproductive age range [15, 50).
+recalculate ASFR within the reproductive age range [15, 50). # completed and added new interpretation for ASFR and TFR
